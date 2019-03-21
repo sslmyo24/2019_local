@@ -1,0 +1,2 @@
+RewriteEngine On
+RewriteRule ^(((?!.css)(?!.js)(?!.jpg)(?!.png)(?!.jpeg).)*)$ index.php?param=$1 [L,QSA]
