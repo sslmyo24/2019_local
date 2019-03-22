@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Todo blog</title>
+  <link rel="stylesheet" type="text/css" href="css/common.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="top">
+      <div class="container util">
+        <a href="#">로그아웃</a>
+        <a href="#">내 블로그</a>
+        <a href="#">블로그관리</a>
+      </div>
+    </div>
+    <div class="header-content container">
+      <h3 class="logo"><a href="#">Todo Blog</a></h3>
+    </div>
+    <nav class="gnb">
+      <ul>
+        <li><a href="#">Perferendis (5)</a></li>
+        <li><a href="#">Similique (6)</a></li>
+        <li><a href="#">Molestiae (3)</a></li>
+        <li><a href="#">Corporis (4)</a></li>
+      </ul>
+    </nav>
+  </header>
+  <section class="content-wrap">
+    <div class="container">
+      <h3 class="content-title">게시물 작성</h3>
+      <div class="fields board">
+        <form action="" method="post">
+          <fieldset><legend>글작성</legend>
+            <ul>
+              <li>
+                <div class="lbl"><label for="board-subject">제목</label></div>
+                <div class="desc"><input type="text" name="subject" id="board-subject" class="input full" autofocus></div>
+              </li>
+              <li>
+                <div class="lbl"><label for="board-content">내용</label></div>
+                <div class="desc"><textarea name="content" id="board-content" class="input full" cols="80" rows="10"></textarea></div>
+              </li>
+            </ul>
+            <div class="btn-group">
+              <a href="#" class="btn sub">목록으로</a>
+              <button type="submit" class="btn main">작성완료</button>
+            </div>
+          </fieldset>
+        </form>
+      </div>
+    </div>
+  </section>
+  <footer class="site-footer">
+    Copyright &copy; 2019 webskills.kr All Right Reserved.
+  </footer>
+</body>
+</html>
