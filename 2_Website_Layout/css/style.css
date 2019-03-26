@@ -1,0 +1,27 @@
+/*config*/
+* {margin: 0;padding: 0;}
+ul, li {list-style: none;}
+a {text-decoration: none;}
+input[type="radio"], input[type="checkbox"] {display: none;}
+
+/*lib*/
+.flex {display: -webkit-flex; display: -moz-flex; display: -ms-flex; display: -o-flex; display: flex;}
+.flex-wrap {-webkit-flex-wrap: wrap; -moz-flex-wrap: wrap; -ms-flex-wrap: wrap; -o-flex-wrap: wrap; flex-wrap: wrap;}
+/*side-menu*/
+#menu-open {width: 60px; height: 60px; background: #5b2415; justify-content: center; -ms-align-items: center; align-items: center; position: fixed; top: 74px; right: 0; z-index: 10;}
+#open-btn {width: 30px; height: 22px; align-content: space-between; position: relative;}
+#open-btn > div {width: 100%; height: 4px; background: #fff;}
+#open-btn > label {position: absolute; z-index: 10; top: 0; bottom: 0; left: 0; right: 0;}
+#menu-body {width: 390px; height: 100vh; background: rgba(255, 82, 30, .6); position: fixed; top: 0; bottom: 0; right: -390px; justify-content: center; transition: .5s;}
+#menu-body > ul {padding-top: 148px;}
+#menu-body li {text-align: center;}
+#menu-body li:not(:first-child) {margin-top: 40px;}
+#menu-body a {color: #fff; font-size: 25px;font-family: '맑은 고딕';}
+
+/*side-menu animation*/
+#menu:checked ~ #menu-body {right: 0;}
+
+/*header*/
+header {height: 700px; position: relative;}
+#gnb {width: 1140px; height: 112px; justify-content: space-between; -ms-align-items: flex-end; align-items: flex-end;}
+#site-logo {justify-content: center; -webkit-flex-wrap: wrap; -moz-flex-wrap: wrap; -ms-flex-wrap: wrap; -o-flex-wrap: wrap; flex-wrap: wrap;}
