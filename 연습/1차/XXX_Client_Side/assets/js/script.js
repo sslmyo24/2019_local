@@ -1,46 +1,231 @@
-const Layout = class {
+const Render = class {
     constructor (model) {
         this.model = model;
+        this.setCategory();
+        this.setCartInfo();
+        this.appendList();
     }
 
-    appendList () {
-        const musicList = this.model.musicList();
+    appendList (key = null) {
+        const target = $('.contents');
+        target.empty();
+        const musicList = this.model.musicList.slice();
+        const sortList = musicList.sort(function(a, b) {
+            const aDate = parseInt(a.release.replace(/\./gi, ""));
+            const bDate = parseInt(b.release.replace(/\./gi, ""));
+            return bDate - aDate;
+        });
+        const category = $("#main-menu .active-menu").data('category');
+        $("#page-wrapper h2").text(category);
         const albumText = `
             <div class="col-md-2 col-sm-2 col-xs-2 product-grid">
                 <div class="product-items">
                         <div class="project-eff">
-                            <img class="img-responsive" src="images/20163624.jpg" alt="Time for the moon night">
+                            <img class="img-responsive" src="images/{{image}}" alt="{{name}}">
                         </div>
                     <div class="produ-cost">
-                        <h5>Time for the moon night</h5>
+                        <h5>{{name}}</h5>
                         <span>
                             <i class="fa fa-microphone"> 아티스트</i> 
-                            <p>여자친구(GFRIEND)</p>
+                            <p>{{artist}}</p>
                         </span>
                         <span>
                             <i class="fa  fa-calendar"> 발매일</i> 
                              
-                            <p>2018.04.30</p>
+                            <p>{{date}}</p>
                         </span>
                         <span>
                             <i class="fa fa-money"> 가격</i>
-                            <p>￦11,000</p>
+                            <p>￦ {{price}}</p>
                         </span>
                         <span class="shopbtn">
-                            <button class="btn btn-default btn-xs">
-                                <i class="fa fa-shopping-cart"></i> 쇼핑카트담기
+                            <button class="btn btn-default btn-xs" data-idx="{{idx}}">
+                                <i class="fa fa-shopping-cart"></i> {{cartState}}
                             </button>
                         </span>
                     </div>
                 </div>
             </div>
         `;
-        for (const data of musicList) {
+        for (const data of sortList) {
+            if (category !== 'ALL' && category !== data.category) continue;
+            if (key !== null && data.albumName.indexOf(key) === -1 && data.artist.indexOf(key) === -1) continue;
+            let albumName = data.albumName;
+            let artist = data.artist;
+            if (key !== null) {
+                const rep = new RegExp(key, 'gi');
+                albumName = albumName.replace(rep,`<strong class="highlight">${key}</strong>`);
+                artist = artist.replace(rep,`<strong class="highlight">${key}</strong>`);
+            }
+            const thisCart = this.model.cart[data.idx];
+            const appendText = albumText
+                                .replace(/{{image}}/gi, data.albumJaketImage)
+                                .replace(/{{name}}/gi, albumName)
+                                .replace(/{{artist}}/gi, artist)
+                                .replace(/{{date}}/gi, data.release)
+                                .replace(/{{price}}/gi, numberFormat(parseInt(data.price.replace("원", ""))))
+                                .replace(/{{idx}}/gi, data.idx)
+                                .replace(/{{cartState}}/gi, thisCart !== undefined ? `추가하기 (${numberFormat(thisCart.quantity)}개)` : `쇼핑카트담기`)
+            target.append(appendText);
+        }
+        if (key !== null && target.find('.product-grid').length == 0) {
+            target.append('<h2>검색된 앨범이 없습니다.</h2>')
+        }
+    }
 
+    setCategory () {
+        const target = $("#main-menu");
+        $("li:nth-child(2) a", target).data('category', 'ALL');
+        $("li:not(:first-child):not(:nth-child(2))", target).remove();
+        let category = [];
+        const listText = `
+            <li>
+                <a href="#" data-category="{{category}}"><i class="fa fa-youtube-play fa-2x"></i> <span>{{category}}</span></a>
+            </li>
+        `;
+        for (const data of this.model.musicList) {
+            if (category.includes(data.category)) continue;
+            category.push(data.category);
+            target.append(listText.replace(/{{category}}/gi, data.category));
+        }
+    }
+
+    setCartInfo () {
+        $('.modal-body tbody').empty();
+        let totalPrice = 0;
+        let quantity = 0;
+        const cartText = `
+            <tr>
+                <td class="albuminfo">
+                    <img src="images/{{image}}">
+                    <div class="info">
+                        <h4>{{name}}</h4>
+                        <span>
+                            <i class="fa fa-microphone"> 아티스트</i> 
+                            <p>{{artist}}</p>
+                        </span>
+                        <span>
+                            <i class="fa  fa-calendar"> 발매일</i> 
+                            <p>{{date}}</p>
+                        </span>
+                    </div>
+                </td>
+                <td class="albumprice">
+                    ￦ {{price}}
+                </td>
+                <td class="albumqty">
+                    <input type="number" class="form-control" data-idx="{{idx}}" value="{{quantity}}">
+                </td>
+                <td class="pricesum">
+                    ￦ {{totalPrice}}
+                </td>
+                <td>
+                    <button class="btn btn-default" data-idx="{{idx}}">
+                        <i class="fa fa-trash-o"></i> 삭제
+                    </button>
+                </td>
+            </tr>
+        `;
+        const cartList = this.model.cart;
+        for (const key in cartList) {
+            if (cartList[key] === undefined) continue;
+            quantity += cartList[key].quantity;
+            totalPrice += cartList[key].totalPrice;
+            const albumData = this.model.musicList[key];
+            const appendText = cartText
+                                .replace(/{{image}}/gi, albumData.albumJaketImage)
+                                .replace(/{{name}}/gi, albumData.albumName)
+                                .replace(/{{artist}}/gi, albumData.artist)
+                                .replace(/{{artist}}/gi, albumData.artist)
+                                .replace(/{{date}}/gi, albumData.release)
+                                .replace(/{{price}}/gi, numberFormat(parseInt(albumData.price.replace("원", ""))))
+                                .replace(/{{quantity}}/gi, numberFormat(cartList[key].quantity))
+                                .replace(/{{totalPrice}}/gi, numberFormat(cartList[key].totalPrice))
+                                .replace(/{{idx}}/gi, albumData.idx)
+            $('.panel-body tbody').append(appendText);
+        }
+        const buttonText = `<i class="fa fa-shopping-cart"></i> 쇼핑카트 <strong>${numberFormat(quantity)}</strong> 개 금액 ￦ ${numberFormat(totalPrice)}원`;
+        $('.panel-body > button').html(buttonText);
+        $('.panel-body .totalprice span').text(`￦${numberFormat(totalPrice)}`);
+    }
+
+    categorySelect () {
+        const $render = this
+        return function () {
+            $("#main-menu a").removeClass('active-menu');
+            $(this).addClass('active-menu');
+            $render.appendList();
+        }
+    }
+
+    search () {
+        const $render = this
+        return function (e) {
+            const key = $(this).parents('.search').find('input').val();
+            $render.appendList(key);
+        }
+    }
+
+    cartInsert () {
+        const $render = this
+        const model = this.model
+        return function () {
+            const idx = $(this).data('idx');
+            let quantity = 1;
+            if (model.cart[idx] !== undefined) {
+                quantity += model.cart[idx].quantity;
+            }
+            const totalPrice = model.musicList[idx].price.replace('원', '')*quantity;
+            const data = {
+                'quantity':quantity,
+                'totalPrice':totalPrice
+            }
+            model.cart[idx] = data;
+            model.setCart();
+            $render.setCartInfo();
+            $render.appendList();
+        }
+    }
+
+    cartDelete () {
+        const $render = this
+        const model = this.model
+        return function () {
+            if (!confirm('정말 삭제 하시겠습니까?')) return false;
+            const idx = $(this).data('idx');
+            delete model.cart[idx];
+            model.setCart();
+            $render.setCartInfo();
+            $render.appendList();
+        }
+    }
+
+    cartUpdate () {
+        const $render = this
+        const model = this.model
+        return function () {
+            if ($(this).val() < 1) $(this).val(1);
+            const quantity = $(this).val();
+            const idx = $(this).data('idx');
+            const price = model.musicList[idx].price.replace('원', '');
+            model.cart[idx].quantity = quantity;
+            model.cart[idx].totalPrice = quantity*price;
+            model.setCart();
+            $render.setCartInfo();
+            $render.appendList();
+        }
+    }
+
+    payCart () {
+        const $render = this
+        const model = this.model
+        return function () {
+            alert('결제가 완료되었습니다.');
+            model.clearCart();
+            location.reload();
         }
     }
 }
-
 
 const Model = class {
     constructor () {
@@ -4954,20 +5139,47 @@ const Model = class {
         "release"           : "2018.05.15",
         "price"             : "13000원"
     }];
+        for (const key in this.musicList) {
+            this.musicList[key].idx = key;
+        }
     }
 
     initCart () {
         this.cartStorage = localStorage.getItem('cart');
-        this.cart = this.cartStorage ? JSON.parse(this.cartStorage) : [];
+        this.cart = this.cartStorage ? JSON.parse(this.cartStorage) : {};
+    }
+
+    setCart () {
+        localStorage.setItem('cart', JSON.stringify(this.cart));
+    }
+
+    clearCart () {
+        localStorage.removeItem('cart');
     }
 }
 
+const numberFormat = number => {
+    return new Intl.NumberFormat().format(number);
+}
+
 const model = new Model();
-const layout = new Layout(model);
+const render = new Render(model);
 
 const loader = _ => {
-    layout.appendList();
+    const style = `
+        <style>
+            strong.highlight {background:#09f;color:#fff;}
+        </style>
+    `
+
+    $('head').append(style);
 }
 
 $(loader)
 .on("click", "a[href='#']", e => e.preventDefault())
+.on("click", "#main-menu a", render.categorySelect())
+.on("click", "#main-menu .form-group button", render.search())
+.on("click", ".shopbtn > button", render.cartInsert())
+.on("click", ".panel-body tr button", render.cartDelete())
+.on("change", ".panel-body .albumqty > input", render.cartUpdate())
+.on("click", ".modal-footer > .btn-primary", render.payCart())
