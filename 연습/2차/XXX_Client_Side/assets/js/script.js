@@ -148,6 +148,16 @@ const Render = class {
         }
     }
 
+    keySearch () {
+        const $render = this
+        return function (e) {
+            if (e.keyCode == 13) {
+                const key = $(this).val();
+                $render.appendList(key);
+            }
+        }
+    }
+
     cartInsert () {
         const $render = this
         const model = this.model
@@ -5148,7 +5158,8 @@ const render = new Render(model);
 $(document)
 .on("click", "a[href='#']", e => e.preventDefault())
 .on("click", "#main-menu li a", render.categorySelect())
-.on("click", "#main-menu li:first-child button", render.search())
+.on("click", "#main-menu .search button", render.search())
+.on("keydown", "#main-menu .search input", render.keySearch())
 .on("click", ".shopbtn > button", render.cartInsert())
 .on("change", ".albumqty > input", render.cartUpdate())
 .on("click", ".modal-body tr button", render.cartDelete())
